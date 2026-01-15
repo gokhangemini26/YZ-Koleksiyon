@@ -1,0 +1,321 @@
+// This is your Prisma schema file info
+// Database: PostgreSQL with pgvector extension
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  extensions = [pgvector]
+}
+
+// ============================================================================
+// CORE SYSTEM & AUTH
+// ============================================================================
+
+enum UserRole {
+  GM
+  ADMIN
+  MODULE_USER
+}
+
+enum Department {
+  DESIGN
+  MERCHANDISING
+  PRODUCTION
+  SALES
+}
+
+model User {
+  id              String       @id @default(uuid())
+  email           String       @unique
+  passwordHash    String
+  name            String?
+  role            UserRole     @default(MODULE_USER)
+  departmentTags  Department[]
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  
+  // Relations
+  approvals       Approval[]
+  systemLogs      SystemLog[]
+  designs         ProductDesign[]
+  loginLogs       LoginLog[]
+  operationLogs   OperationLog[]
+}
+
+model LoginLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  timestamp DateTime @default(now())
+  ip        String?
+  success   Boolean
+  details   String?
+}
+
+model OperationLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  module    String
+  details   Json?
+  timestamp DateTime @default(now())
+}
+
+// ============================================================================
+// MOD 1: STRATEGY
+// ============================================================================
+
+model Season {
+  id          String   @id @default(uuid())
+  name        String   // e.g., "SS26 High Summer"
+  startDate   DateTime
+  endDate     DateTime
+  status      String   // PLANNED, ACTIVE, ARCHIVED
+  
+  strategyDoc StrategyDoc?
+  linePlan    LinePlanItem[]
+  moodBoards  MoodBoard[]
+}
+
+model StrategyDoc {
+  id             String   @id @default(uuid())
+  seasonId       String   @unique
+  season         Season   @relation(fields: [seasonId], references: [id])
+  budgetCap      Decimal
+  skuTargetCount Int
+  targetMargin   Decimal  // e.g., 0.60 for 60%
+  keyDates       Json     // { "sketchHandoff": "2026-02-01" }
+}
+
+// ============================================================================
+// MOD 2: RESEARCH (AI TRENDS)
+// ============================================================================
+
+model TrendReport {
+  id             String   @id @default(uuid())
+  title          String
+  summary        String   @db.Text
+  sentimentScore Float
+  keywords       String[]
+  sourceUrls     String[]
+  images         String[] 
+  createdAt      DateTime @default(now())
+}
+
+// ============================================================================
+// MOD 3: COLLECTION ARCHITECTURE (LINE PLAN)
+// ============================================================================
+
+enum PricePoint {
+  ENTRY
+  CORE
+  PREMIUM
+}
+
+model LinePlanItem {
+  id              String        @id @default(uuid())
+  seasonId        String
+  season          Season        @relation(fields: [seasonId], references: [id])
+  category        String        // Dress, Top, Knit
+  pricePoint      PricePoint
+  
+  // The "Slot" filled by a design
+  productDesign   ProductDesign?
+}
+
+// ============================================================================
+// MOD 4 & 5: VISUAL PIPELINE & DESIGN
+// ============================================================================
+
+enum VisualType {
+  SKETCH
+  REMIX
+  MOOD
+  TECHNICAL
+}
+
+enum AiLabel {
+  REAL
+  DERIVED
+  INSPIRATION
+}
+
+model VisualAsset {
+  id              String   @id @default(uuid())
+  url             String
+  type            VisualType
+  aiLabel         AiLabel
+  confidenceScore Float?
+  embedding       Unsupported("vector(512)")?  // pgvector
+  
+  // Genealogy
+  parentId        String?
+  parent          VisualAsset? @relation("AssetHistory", fields: [parentId], references: [id])
+  children        VisualAsset[] @relation("AssetHistory")
+  
+  // Relations
+  moodBoards      MoodBoard[]
+  productDesigns  ProductDesign[]
+}
+
+model MoodBoard {
+  id              String   @id @default(uuid())
+  seasonId        String
+  season          Season   @relation(fields: [seasonId], references: [id])
+  aiDescription   String?  @db.Text
+  
+  visualAssets    VisualAsset[]
+}
+
+enum DesignStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  DROPPED
+}
+
+model ProductDesign {
+  id              String   @id @default(uuid())
+  linePlanId      String?  @unique
+  linePlan        LinePlanItem? @relation(fields: [linePlanId], references: [id])
+  
+  skuPlaceholder  String   @unique
+  status          DesignStatus    @default(DRAFT)
+  
+  designerId      String
+  designer        User     @relation(fields: [designerId], references: [id])
+  
+  visualSketchId  String?
+  visualSketch    VisualAsset? @relation(fields: [visualSketchId], references: [id])
+  
+  techPack        Json?    // { measurements: {}, bom: {}, stitching: {} }
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  fabricOptions   FabricOption[]
+  samples         Sample[]
+  costSheet       CostSheet?
+  productionJobs  ProductionJob[]
+}
+
+model FabricOption {
+  id              String        @id @default(uuid())
+  designId        String
+  design          ProductDesign @relation(fields: [designId], references: [id])
+  materialName    String
+  composition     String        // "100% Silk"
+  supplierRef     String
+  isPrimary       Boolean       @default(false)
+}
+
+// ============================================================================
+// MOD 6, 7, 8, 9: EXECUTION
+// ============================================================================
+
+enum SampleStage {
+  PROTO_1
+  PROTO_2
+  SMS
+  PP_SAMPLE
+}
+
+model Sample {
+  id              String        @id @default(uuid())
+  designId        String
+  design          ProductDesign @relation(fields: [designId], references: [id])
+  stage           SampleStage
+  trackingId      String        // QR Code payload
+  status          String        // PENDING, REJECTED, APPROVED
+  qaComments      Json?         // Structured QA feedback
+}
+
+model CostSheet {
+  id              String        @id @default(uuid())
+  designId        String        @unique
+  design          ProductDesign @relation(fields: [designId], references: [id])
+  
+  // Cost Components (Decimal for precision)
+  rawMaterial     Decimal
+  labor           Decimal
+  logistics       Decimal
+  duty            Decimal
+  
+  // Targets
+  targetRetail    Decimal
+  wholesalePrice  Decimal
+  
+  isApproved      Boolean       @default(false)
+}
+
+model Approval {
+  id              String        @id @default(uuid())
+  entityType      String        // "COST_SHEET", "DESIGN", "LINE_PLAN"
+  entityId        String
+  approverId      String
+  approver        User          @relation(fields: [approverId], references: [id])
+  verdict         String        // APPROVED, REJECTED
+  notes           String?
+  timestamp       DateTime      @default(now())
+}
+
+model ProductionJob {
+  id              String        @id @default(uuid())
+  designId        String
+  design          ProductDesign @relation(fields: [designId], references: [id])
+  factoryName     String
+  quantity        Int
+  shipDate        DateTime
+  status          String
+}
+
+// ============================================================================
+// MOD 10: ANALYSIS
+// ============================================================================
+
+model PerformanceMetric {
+  id              String        @id @default(uuid())
+  sku             String        @unique
+  sellThroughRate Float
+  returnRate      Float
+  customerSentiment Float     // -1.0 to 1.0
+  updatedAt       DateTime      @default(now())
+}
+
+// ============================================================================
+// MOD 11: ADMIN (SYSTEM CONTROL)
+// ============================================================================
+
+model SystemLog {
+  id              String        @id @default(uuid())
+  timestamp       DateTime      @default(now())
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id])
+  action          String
+  module          String
+  meta            Json?
+}
+
+model ExternalApiKey {
+  service         String        @id // "OPENAI", "STABILITY"
+  keyHash         String
+  usageLimit      Int           // Daily request limit
+  currentUsage    Int           @default(0)
+  lastReset       DateTime
+}
+
+model FeatureToggle {
+  id              String        @id @default(uuid())
+  module          String        // "MOD_5_DESIGN"
+  featureKey      String        // "AI_REMIX"
+  isEnabled       Boolean       @default(true)
+  targetAudience  Json?         // { "roles": ["GM"] }
+}

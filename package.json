@@ -1,0 +1,19 @@
+{
+    "name": "fashion-erp-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "build": "turbo run build",
+        "test": "turbo run test",
+        "db:migrate": "prisma migrate dev"
+    },
+    "devDependencies": {
+        "turbo": "^1.10.0",
+        "typescript": "^5.0.0",
+        "@types/node": "^20.0.0"
+    }
+}

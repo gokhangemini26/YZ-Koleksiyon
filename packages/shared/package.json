@@ -1,0 +1,7 @@
+{
+    "name": "@fashion-erp/shared",
+    "version": "0.0.1",
+    "private": true,
+    "main": "src/rbac_policy.ts",
+    "types": "src/rbac_policy.ts"
+}

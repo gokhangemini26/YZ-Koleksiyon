@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # 1. Database (Postgres + pgvector)
+  db:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: fashion_erp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # 2. Redis (Cache/Queue)
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  # 3. Backend API (NestJS)
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://admin:securepassword@db:5432/fashion_erp
+      REDIS_URL: redis://redis:6379
+      AI_WORKER_URL: http://ai-worker:8000
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "3000:3000"
+
+  # 4. AI Worker (Python/FastAPI)
+  ai-worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    environment:
+      # GPU DISABLED FOR COMPATIBILITY
+      GPU_ENABLED: "false"
+      MODEL_PATH: /models/sdxl
+    # RESOURCES SECTION REMOVED TO FIX WSL ERROR
+
+    # 5. Frontend (React/Nginx)
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
