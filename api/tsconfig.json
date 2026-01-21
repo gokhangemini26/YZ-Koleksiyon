@@ -1,0 +1,15 @@
+{
+    "extends": "../apps/api/tsconfig.json",
+    "compilerOptions": {
+        "module": "CommonJS",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "outDir": "../.vercel/output/functions/api"
+    },
+    "include": [
+        "./**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
