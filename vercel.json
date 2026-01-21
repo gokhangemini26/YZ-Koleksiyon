@@ -1,16 +1,13 @@
 {
     "version": 2,
-    "builds": [
+    "framework": null,
+    "buildCommand": "npm run build:all",
+    "outputDirectory": "apps/web/dist",
+    "ignoreCommand": "git diff --quiet HEAD^ HEAD .",
+    "rewrites": [
         {
-            "src": "api/index.ts",
-            "use": "@vercel/node"
-        },
-        {
-            "src": "apps/web/package.json",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "dist"
-            }
+            "source": "/api/(.*)",
+            "destination": "/api"
         }
     ],
     "routes": [
