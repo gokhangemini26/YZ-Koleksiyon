@@ -1,19 +1,27 @@
 {
     "version": 2,
-    "rewrites": [
+    "framework": null,
+    "builds": [
         {
-            "source": "/api/(.*)",
-            "destination": "/apps/api/dist/vercel.js"
+            "src": "apps/web/package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
         },
         {
-            "source": "/(.*)",
-            "destination": "/apps/web/dist/$1"
+            "src": "apps/api/src/main.ts",
+            "use": "@vercel/node"
         }
     ],
-    "functions": {
-        "apps/api/src/vercel.ts": {
-            "memory": 1024,
-            "maxDuration": 10
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/apps/api/src/main.ts"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/apps/web/dist/$1"
         }
-    }
+    ]
 }
