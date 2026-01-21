@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 
 @Injectable()
@@ -12,7 +13,7 @@ export class StrategyService {
         }
 
         // 2. Transaction: Create Season + Strategy Doc
-        return this.prisma.$transaction(async (tx) => {
+        return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const season = await tx.season.create({
                 data: {
                     name: data.name,
