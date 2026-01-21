@@ -1,0 +1,50 @@
+Environment variables loaded from .env
+Environment variables loaded from packages\database\.env
+Prisma schema loaded from packages\database\schema.prisma
+Datasource "db": PostgreSQL database "postgres", schema "public" at "aws-1-ap-south-1.pooler.supabase.com:5432"
+
+Drift detected: Your database schema is not in sync with your migration history.
+
+The following is a summary of the differences between the expected database schema given your migrations files, and the actual schema of the database.
+
+It should be understood as the set of changes to get from the expected schema to the actual schema.
+
+If you are running this the first time on an existing database, please make sure to read this documentation page:
+https://www.prisma.io/docs/guides/database/developing-with-prisma-migrate/troubleshooting-development
+
+[+] Added extensions
+  - pg_graphql
+
+[+] Added extensions
+  - pg_stat_statements
+
+[+] Added extensions
+  - pgcrypto
+
+[+] Added extensions
+  - supabase_vault
+
+[+] Added extensions
+  - uuid-ossp
+
+[?25l[2K[1G[36m?[39m [1mWe need to reset the "public" schema at "aws-1-ap-south-1.pooler.supabase.com:5432"
+Do you want to continue? All data will be lost.[22m [90m┬╗[39m [90m(y/N)[39m[2K[1G[2K[1G[32mΓêÜ[39m [1mWe need to reset the "public" schema at "aws-1-ap-south-1.pooler.supabase.com:5432"
+Do you want to continue? All data will be lost.[22m [90m...[39m yes
+[?25h
+Applying migration `20260121123618_init_schema`
+Error: P3018
+
+A migration failed to apply. New migrations cannot be applied before the error is recovered from. Read more about how to resolve migration issues in a production database: https://pris.ly/d/migrate-resolve
+
+Migration name: 20260121123618_init_schema
+
+Database error code: 0A000
+
+Database error:
+ERROR: extension "pgvector" is not available
+DETAIL: Could not open extension control file "/usr/lib/postgresql/share/postgresql/extension/pgvector.control": No such file or directory.
+HINT: The extension must first be installed on the system where PostgreSQL is running.
+
+DbError { severity: "ERROR", parsed_severity: Some(Error), code: SqlState(E0A000), message: "extension \"pgvector\" is not available", detail: Some("Could not open extension control file \"/usr/lib/postgresql/share/postgresql/extension/pgvector.control\": No such file or directory."), hint: Some("The extension must first be installed on the system where PostgreSQL is running."), position: None, where_: None, schema: None, table: None, column: None, datatype: None, constraint: None, file: Some("extension.c"), line: Some(505), routine: Some("parse_extension_control_file") }
+
+
