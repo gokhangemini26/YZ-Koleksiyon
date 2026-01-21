@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, UseGuards, Put } from '@nestjs/common';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { Permission } from '@fashion-erp/shared/rbac_policy';
+import { Permission } from '../../../../../packages/shared/src/rbac_policy';
 import { RequirePermission } from '../../common/decorators/require-permissions.decorator';
 
 @Controller('admin')

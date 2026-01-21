@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserRole, RBAC_MATRIX, Permission } from '@fashion-erp/shared/rbac_policy';
+import { UserRole, RBAC_MATRIX, Permission } from '../../../../../packages/shared/src/rbac_policy';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
