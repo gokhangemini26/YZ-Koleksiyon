@@ -7,6 +7,7 @@ import { PrismaService } from './common/prisma/prisma.service';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { AuditService } from './common/audit/audit.service';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AppController } from './app.controller';
 
 @Global()
 @Module({
@@ -16,6 +17,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
         AdminModule,
         // Other modules will be imported here as they are built
     ],
+    controllers: [AppController],
     providers: [
         AuditService,
         PrismaService,
