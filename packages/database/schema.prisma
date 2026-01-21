@@ -11,7 +11,6 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-  extensions = [pgvector]
 }
 
 // ============================================================================
@@ -155,7 +154,7 @@ model VisualAsset {
   type            VisualType
   aiLabel         AiLabel
   confidenceScore Float?
-  embedding       Unsupported("vector(512)")?  // pgvector
+  // embedding       Unsupported("vector(512)")?  // pgvector temporarily disabled
   
   // Genealogy
   parentId        String?
