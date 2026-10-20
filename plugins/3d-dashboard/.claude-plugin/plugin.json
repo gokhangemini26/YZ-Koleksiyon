@@ -1,0 +1,7 @@
+{
+  "name": "3d-dashboard",
+  "version": "1.0.0",
+  "description": "İşletmenizin canlı verileriyle çalışan animasyonlu bir 3D dünya (Three.js) kurar: veri bağla, dünyayı tasarla, 3D'yi inşa et, canlı yap, paylaş.",
+  "author": { "name": "gokhangemini26" },
+  "keywords": ["dashboard", "3d", "threejs", "stripe", "square", "shopify", "google-sheets"]
+}
