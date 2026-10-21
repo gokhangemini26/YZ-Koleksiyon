@@ -1,0 +1,16 @@
+{
+  "name": "yz-koleksiyon-plugins",
+  "owner": {
+    "name": "gokhangemini26"
+  },
+  "plugins": [
+    {
+      "name": "3d-dashboard",
+      "source": "./plugins/3d-dashboard",
+      "description": "İşletmenizin canlı verileriyle çalışan interaktif 3D (Three.js) dashboard'u adım adım kurar."
+    }
+  ],
+  "metadata": {
+    "description": "YZ-Koleksiyon Claude Code plugin'leri"
+  }
+}
